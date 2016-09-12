@@ -1,0 +1,127 @@
+<link rel='import' href='mo-todolist_template.html'>
+
+<script>
+(function() {
+    
+    // currentDoc = mo-todolist.html document 
+    // document = index.html document
+    // templateDoc = mo-todolist_template.html document
+
+    // Creates an object based in the HTML Element prototype
+    var element = Object.create(HTMLElement.prototype);
+    console.log('initialize element');
+
+    //Retrieving the current document and not the host (index.html) document
+    var currentDoc = document.currentScript.ownerDocument;
+
+    //link.addEventListener('load', function(e) {
+    var templateDoc = currentDoc.querySelector('link[rel="import"]').import;
+
+    element.options = {
+        tasksList : []
+    };
+
+    // Fires when an instance of the element is created
+    element.createdCallback = function() 
+    {
+        // Adding a Shadow DOM
+        var rootElement = this.createShadowRoot();
+        
+        // Adding a template
+        var template = templateDoc.querySelector('template');
+        var clone = document.importNode(template.content, true);
+        rootElement.appendChild(clone);
+        
+        //add specific component values (not on prototype)
+        this.tasksListContainer = rootElement.querySelector('#tasksList');
+        
+        this.registerButtonsCallbacks(rootElement);
+
+        console.log('element created');
+    };
+
+    // Fires when an instance was inserted into the document
+    element.attachedCallback = function() 
+    { 
+        console.log('element attached');
+    };
+
+    // Fires when an instance was removed from the document
+    element.detachedCallback = function() 
+    {
+        console.log('element detached');
+    };
+
+    element.attributeChangedCallback = function(attr, oldVal, newVal) {};   
+
+    
+    element.registerButtonsCallbacks = function(rootElement) 
+    { 
+        var addButton = rootElement.querySelector('#add');
+        var self = this;
+        
+        addButton.addEventListener('click', function(){
+            element.clickAddButton(self, rootElement);
+        });
+      
+    };
+
+    element.clickAddButton = function(that, rootElement) 
+    {
+        var description = rootElement.querySelector('#description').value;
+        var t = 
+            {
+                description : description,
+                status : 'todo'
+            };
+
+        that.addTask(t); 
+    };
+
+
+    element.addTask = function(task)
+    {
+        this.options.tasksList.push(task);
+
+        var container = document.createElement('div');
+        var descSpan = document.createElement('span');
+        var deleteButton = document.createElement('button');
+        
+        descSpan.innerHTML = task.description;
+        container.appendChild(descSpan);
+        container.appendChild(deleteButton);
+        deleteButton.textContent = 'delete';
+        this.tasksListContainer.appendChild(container);
+
+
+        //this.updateView();
+
+        if (this.options.onTaskAdded)
+            this.options.onTaskAdded(task);
+        else
+            console.log('AddButton was clicked but no callback is set');
+    };
+   
+
+    element.init = function(options)
+    {
+        Object.assign(this.options, options);
+        console.log('connect');
+    };
+
+  /*  element.updateView = function()
+    {
+        this.tasksListContainer.textContent = this.options.tasksList.length;
+    };*/
+
+
+    // Registers custom element
+    document.registerElement('mo-todolist', {
+        prototype: element
+    });
+
+   
+}());
+</script>
+
+

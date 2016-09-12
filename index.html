@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+
+    <meta charset='utf-8'>
+    <title>Web Component test 1</title>
+	<link rel='import' href='./mo-todolist/mo-todolist.html'>
+
+</head>
+<body>
+    
+    <mo-todolist id='todolist1'></mo-todolist>
+
+    
+    <script type='text/javascript'>
+    	var tdl = document.querySelector('#todolist1');
+    	
+        tdl.init(
+    		{
+    			onTaskAdded : function(newValue){
+    				console.log('adding new task : ' + newValue.description);
+    			}
+    		});
+
+        tdl.addTask({
+            description : 'programmaticaly added',
+            status : 'todo'
+        });
+
+        tdl.addTask({
+            description : 'programmaticaly added & done',
+            status : 'done'
+        });
+    </script>
+</body>
+</html>
