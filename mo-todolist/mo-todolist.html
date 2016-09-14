@@ -1,6 +1,10 @@
-<link rel='import' href='mo-todolist_template.html'>
+<link id="todoTemplate" rel='import' href='mo-todolist_template.html'>
+<link id="taskTemplate" rel='import' href='mo-task_template.html'>
+
+
 
 <script>
+/*jshint esversion: 6 */
 (function() {
     
     // currentDoc = mo-todolist.html document 
@@ -15,104 +19,129 @@
     var currentDoc = document.currentScript.ownerDocument;
 
     //link.addEventListener('load', function(e) {
-    var templateDoc = currentDoc.querySelector('link[rel="import"]').import;
+    var todoTemplate = currentDoc.querySelector('#todoTemplate').import;
+    var taskTemplate = currentDoc.querySelector('#taskTemplate').import;
 
-    element.options = {
-        tasksList : []
-    };
+    
+
+
 
     // Fires when an instance of the element is created
     element.createdCallback = function() 
     {
         // Adding a Shadow DOM
-        var rootElement = this.createShadowRoot();
-        
+        this.rootElement = this.createShadowRoot();
+        this.taskCount =  0;
+        this.callbacks = {};
+
         // Adding a template
-        var template = templateDoc.querySelector('template');
-        var clone = document.importNode(template.content, true);
-        rootElement.appendChild(clone);
+        var todoTemplateElement = todoTemplate.querySelector('template');
+        var clone = document.importNode(todoTemplateElement.content, true);
+        this.rootElement.appendChild(clone);
         
         //add specific component values (not on prototype)
-        this.tasksListContainer = rootElement.querySelector('#tasksList');
-        
-        this.registerButtonsCallbacks(rootElement);
+        this.tasksListContainer = this.rootElement.querySelector('#tasksList');
+        this.tasksCountContainer = this.rootElement.querySelector('#taskCount');
 
+        this.registerButtonsCallbacks(this.rootElement);
         console.log('element created');
     };
 
-    // Fires when an instance was inserted into the document
     element.attachedCallback = function() 
     { 
         console.log('element attached');
     };
 
-    // Fires when an instance was removed from the document
     element.detachedCallback = function() 
     {
         console.log('element detached');
     };
 
-    element.attributeChangedCallback = function(attr, oldVal, newVal) {};   
+    element.attributeChangedCallback = function(attr, oldVal, newVal) {};
 
-    
+
     element.registerButtonsCallbacks = function(rootElement) 
     { 
-        var addButton = rootElement.querySelector('#add');
-        var self = this;
-        
-        addButton.addEventListener('click', function(){
-            element.clickAddButton(self, rootElement);
-        });
+        var addButton = this.rootElement.querySelector('#addButton');  
+        var that = this;
+        addButton.addEventListener('click', 
+            data => element.onAddButtonClicked.bind(that)(data)
+        );
       
     };
 
-    element.clickAddButton = function(that, rootElement) 
+    element.onAddButtonClicked = function(data)
     {
-        var description = rootElement.querySelector('#description').value;
+        console.log('onAddButtonClicked');
+
+        var taskDesc = this.rootElement.querySelector('#inputDescription').value;
         var t = 
             {
-                description : description,
+                description : taskDesc,
                 status : 'todo'
             };
 
-        that.addTask(t); 
+        this.addTask(t); 
     };
 
-
+    
     element.addTask = function(task)
     {
-        this.options.tasksList.push(task);
+        var taskTemplateElement = taskTemplate.querySelector('template');
+        var node = document.importNode(taskTemplateElement.content, true);
+        var desc = node.querySelector('.description');
+        var deleteButton = node.querySelector('.deleteButton');
+        var doneButton = node.querySelector('.doneButton');
+        var taskContainer = node.querySelector('.taskContainer');
+     
 
-        var container = document.createElement('div');
-        var descSpan = document.createElement('span');
-        var deleteButton = document.createElement('button');
+        desc.innerHTML = task.description;
+        this.tasksListContainer.appendChild(node);
+
+
+        var that = this;
         
-        descSpan.innerHTML = task.description;
-        container.appendChild(descSpan);
-        container.appendChild(deleteButton);
-        deleteButton.textContent = 'delete';
-        this.tasksListContainer.appendChild(container);
+        deleteButton.addEventListener('click', 
+            data => element.onClickDeleteButton.bind(that)(task, taskContainer)
+        );
 
+        doneButton.addEventListener('click', 
+            data => console.log('Done button Clicked!')
+        );
 
-        //this.updateView();
+        this.taskCount++;
+        this.updateCount();
 
-        if (this.options.onTaskAdded)
-            this.options.onTaskAdded(task);
+        if (this.callbacks.onTaskAdded)
+            this.callbacks.onTaskAdded(task);
         else
-            console.log('AddButton was clicked but no callback is set');
+            console.log('AddButton was clicked but no callbacks is set');
     };
-   
 
-    element.init = function(options)
+    element.onClickDeleteButton = function(task, taskContainer) 
     {
-        Object.assign(this.options, options);
+        taskContainer.remove();
+        this.taskCount--;
+
+        this.updateCount();
+
+        if (this.callbacks.onTaskDeleted)
+            this.callbacks.onTaskDeleted(task);
+        else
+            console.log('DeleteButton was clicked but no callbacks is set for task : ' + task.description);
+    };
+
+
+    element.init = function(callbacks)
+    {
+        Object.assign(this.callbacks, callbacks);
         console.log('connect');
     };
 
-  /*  element.updateView = function()
+    element.updateCount = function()
     {
-        this.tasksListContainer.textContent = this.options.tasksList.length;
-    };*/
+       this.tasksCountContainer.textContent = this.taskCount + ' task(s) left';
+    };
 
 
     // Registers custom element
@@ -120,7 +149,7 @@
         prototype: element
     });
 
-   
+
 }());
 </script>
 

@@ -5,21 +5,29 @@
     <meta charset='utf-8'>
     <title>Web Component test 1</title>
 	<link rel='import' href='./mo-todolist/mo-todolist.html'>
-
+    <link rel="stylesheet" href="./css/font-awesome.css"> 
 </head>
 <body>
     
+    <script type='text/javascript'>
+        var callbackTaskAdded = function(task){
+            console.log('Added task : ' + task.description);
+        };
+
+    </script>
+
     <mo-todolist id='todolist1'></mo-todolist>
 
+    <br/>
+    <br/>
+    <mo-todolist id='todolist2'></mo-todolist>
     
     <script type='text/javascript'>
     	var tdl = document.querySelector('#todolist1');
     	
         tdl.init(
     		{
-    			onTaskAdded : function(newValue){
-    				console.log('adding new task : ' + newValue.description);
-    			}
+    			onTaskAdded : callbackTaskAdded
     		});
 
         tdl.addTask({
