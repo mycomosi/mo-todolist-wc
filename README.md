@@ -8,26 +8,35 @@ Example of code from host html page.
 
 
 ```html
- <mo-todolist id='todolist1'></mo-todolist>
- 
- <mo-todolist id='todolist2'></mo-todolist>
- 
- <script type='text/javascript'>
- 	var tdl = document.querySelector('#todolist1');
- 	
-     tdl.init(
- 		{
- 			onTaskAdded : callbackTaskAdded
- 		});
+<script type='text/javascript'>
+    var callbackTaskAdded = function(task){
+        console.log('Added task : ' + task.description);
+    };
 
-     tdl.addTask({
-         description : 'programmaticaly added',
-         status : 'todo'
-     });
+</script>
 
-     tdl.addTask({
-         description : 'programmaticaly added & done',
-         status : 'done'
-     });
- </script>
+<mo-todolist id='todolist1'></mo-todolist>
+
+<br/>
+<br/>
+<mo-todolist id='todolist2'></mo-todolist>
+
+<script type='text/javascript'>
+	var tdl = document.querySelector('#todolist1');
+	
+    tdl.init(
+		{
+			onTaskAdded : callbackTaskAdded
+		});
+
+    tdl.addTask({
+        description : 'programmaticaly added',
+        status : 'todo'
+    });
+
+    tdl.addTask({
+        description : 'programmaticaly added & done',
+        status : 'done'
+    });
+</script>
 ```
